@@ -52,8 +52,8 @@ export class TwitchApi {
             .catch(err => console.error(err));
     }
 
-    async fetchStream(id: string) {
-        return await fetch(`https://api.twitch.tv/helix/streams?user_id=${id}`, {
+    async fetchStream(option: {language: string | null, user_login: string | null, type: string | null, user_id: string | null, limit: number | null}) {
+        return await fetch(`https://api.twitch.tv/helix/streams?${option.user_id ? 'user_id=' + option.user_id + '&' : ''}${option.language ? 'language=' + option.language + '&' : ''}${option.user_login ? 'user_login=' + option.user_login + '&' : ''}${option.type ? 'type=' + option.type + '&' : ''}${option.limit ? 'first=' + option.limit : '5'}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${this.token}`,

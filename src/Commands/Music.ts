@@ -67,15 +67,77 @@ module.exports = {
             description: "Skip the song"
         },
         {
-            type: ApplicationCommandOptionType.Subcommand,
+            type: ApplicationCommandOptionType.SubcommandGroup,
             name: "twitch",
             description: "Play a twitch stream",
             options: [
                 {
-                    type: ApplicationCommandOptionType.String,
-                    name: "username",
-                    description: "Username",
-                    required: true
+                    type: ApplicationCommandOptionType.Subcommand,
+                    name: "play",
+                    description: "Play a twitch stream",
+                    options: [
+                        {
+                            type: ApplicationCommandOptionType.String,
+                            name: "username",
+                            description: "username",
+                            required: true
+                        }
+                    ]
+                },
+                {
+                    type: ApplicationCommandOptionType.Subcommand,
+                    name: "search",
+                    description: "Search a twitch stream",
+                    options: [
+                        {
+                            type: ApplicationCommandOptionType.String,
+                            name: "user_login",
+                            description: "user_login",
+                            required: false
+                        },
+                        {
+                            type: ApplicationCommandOptionType.String,
+                            name: "language",
+                            description: "language",
+                            required: false,
+                            choices: [
+                                {
+                                    name: "English",
+                                    value: "en"
+                                },
+                                {
+                                    name: "Francais",
+                                    value: "fr",
+                                },
+                                {
+                                    name: "Español",
+                                    value: "es"
+                                }
+                                ]
+                        },
+                        {
+                            type: ApplicationCommandOptionType.Boolean,
+                            name: "type",
+                            description: "live or not",
+                            required: false,
+                            choices: [
+                                {
+                                    name: "live",
+                                    value: true
+                                },
+                                {
+                                    name: "all",
+                                    value: false
+                                }
+                            ]
+                        },
+                        {
+                            type: ApplicationCommandOptionType.Integer,
+                            name: 'limit',
+                            description: 'limit',
+                            required: false
+                        }
+                    ]
                 }
             ]
         },
@@ -129,10 +191,11 @@ module.exports = {
     ],
 
     execute: async (interaction: ChatInputCommandInteraction, client: Bot) => {
+        const subcommandGroup = interaction.options.getSubcommandGroup();
         const subcommand = interaction.options.getSubcommand();
 
         const queue = client.player.getQueue(interaction.guildId!);
 
-        require(`./music/${subcommand}`)(interaction, client, queue);
+        require(`./music/${subcommandGroup ? subcommandGroup + '/' : ''}${subcommand}`)(interaction, client, queue);
     }
 }

@@ -1,7 +1,7 @@
 import {ChatInputCommandInteraction, EmbedBuilder, GuildMember, VoiceBasedChannel} from "discord.js";
-import {Bot} from "../../Struct/Bot";
-import {Queue} from "../../Struct/Queue";
-import {Track, TrackType} from "../../Interface/Track";
+import {Bot} from "../../../Struct/Bot";
+import {Queue} from "../../../Struct/Queue";
+import {Track} from "../../../Interface/Track";
 
 module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, queue: Queue) => {
 
@@ -24,7 +24,7 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
         ephemeral: true
     });
 
-    let stream = (await client.twitchApi.fetchStream(user.id)).data[0];
+    let stream = (await client.twitchApi.fetchStream({user_id: user.id, user_login: null, type: null, language: null, limit: 2}))?.data[0];
 
     if (!stream) return interaction.followUp({content: 'The streamer you requested is offline !', ephemeral: true});
 
