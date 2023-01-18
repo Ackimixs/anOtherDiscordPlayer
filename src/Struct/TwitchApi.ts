@@ -62,4 +62,15 @@ export class TwitchApi {
         }).then(res => res.json())
             .catch(err => console.error(err));
     }
+
+    async fetchQuery(query: string, maxResults: number = 5, isLive: boolean = true) {
+        return await fetch(`https://api.twitch.tv/helix/search/channels?query=${query}&first=${maxResults}&live_only=${isLive}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${this.token}`,
+                'Client-Id': this.Client_id
+            }
+        }).then(res => res.json())
+            .catch(err => console.error(err));
+    }
 }

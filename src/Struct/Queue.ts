@@ -9,19 +9,19 @@ import {
 import {Bot} from "./Bot";
 import {VoiceBasedChannel, VoiceChannel} from "discord.js";
 import {Player} from "./Player";
-import {Track, TrackType} from "../Interface/Track";
+import {Track} from "../Interface/Track";
+import {shuffleArray} from "../utils/function";
 export class Queue extends EventEmitter {
     guildId: string
     client: Bot
     AudioPlayer: AudioPlayer
     connection: VoiceConnection | undefined
-    resource: AudioResource | undefined
+    actualTrack: Track | null = null;
     private queue: Track[] = [];
     history: Track[] = [];
     player: Player
     playing: boolean = false;
-    musicChannel: VoiceChannel | undefined
-    trackType: TrackType | undefined;
+    musicChannel: VoiceChannel | null = null;
     constructor(client: Bot, guildId: string, player: Player) {
         super();
 
@@ -35,12 +35,7 @@ export class Queue extends EventEmitter {
         this.guildId = guildId;
         this.player = player;
 
-        this.connection?.on(VoiceConnectionStatus.Disconnected, () => {
-            console.log("Disconnected");
-            this.stop();
-        })
-
-        this.player.on('stateChange', (oldState, newState) => {
+        this.AudioPlayer.on('stateChange', (oldState, newState) => {
             if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
                 const previousTrack: Track = this.queue.shift() as Track;
                 this.history.unshift(previousTrack);
@@ -50,7 +45,7 @@ export class Queue extends EventEmitter {
             }
         })
 
-        this.player.on('error', (error) => {
+        this.AudioPlayer.on('error', (error) => {
             console.log(error);
         })
     }
@@ -63,32 +58,35 @@ export class Queue extends EventEmitter {
             adapterCreator: channel.guild.voiceAdapterCreator,
         });
 
-        this.connection.on(VoiceConnectionStatus.Ready, () => {
-            this.emit('connect', this);
+        this.connection.on(VoiceConnectionStatus.Connecting, () => {
+            this.emit('voiceConnectionConnected', this);
         });
+
+        this.connection.on(VoiceConnectionStatus.Destroyed, () => {
+            this.emit('voiceConnectionDestroyed', this);
+        })
 
         this.connection.subscribe(this.AudioPlayer);
     }
     addTrack(track: Track): void {
         this.queue.push(track);
-
-        if (this.queue.length === 1) {
-            this.play();
-        }
     }
 
     addTracks(tracks: Track[]) {
         this.queue.push(...tracks);
     }
 
-    setVolume(volume: number) {
-        this.resource?.volume?.setVolume(volume);
+    getQueue(): Track[] {
+        return this.queue;
     }
 
+    setVolume(volume: number) {
+        this.actualTrack?.resource?.volume?.setVolume(volume);
+    }
 
     stop() {
         this.playing = false;
-        this.resource = undefined;
+        this.actualTrack = null;
         this.queue = [];
         this.history = [];
         this.AudioPlayer.stop();
@@ -98,13 +96,11 @@ export class Queue extends EventEmitter {
 
      play() {
         if (this.queue.length > 0) {
-            this.trackType = this.queue[0].type;
-            this.AudioPlayer.play(this.queue[0].resource as AudioResource);
+            this.actualTrack = this.queue[0];
+            this.AudioPlayer.play(this.actualTrack.resource as AudioResource);
             this.playing = true;
-            this.emit('playNext', this.queue[0]);
-            this.resource = this.queue[0].resource;
+            this.emit('playNext', this.actualTrack);
         } else {
-            this.playing = false;
             this.stop();
         }
     }
@@ -129,7 +125,7 @@ export class Queue extends EventEmitter {
         this.queue = [];
     }
 
-    getQueue(): Track[] {
-        return this.queue;
+    shuffle() {
+        this.queue = shuffleArray(this.queue);
     }
 }

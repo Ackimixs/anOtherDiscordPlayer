@@ -7,7 +7,7 @@ import {Queue} from "./Queue";
 import EventEmitter from "node:events";
 import {Track, TrackType} from "../Interface/Track";
 import m3u8stream from "m3u8stream";
-import {AllSpotify, SpotifyApi, SpotifyType} from "./SpotifyApi";
+import {SpotifyApi} from "./SpotifyApi";
 
 const twitch = require("twitch-m3u8");
 export class Player extends EventEmitter {
@@ -29,12 +29,13 @@ export class Player extends EventEmitter {
 
     }
 
-    YoutubeSearch(query: string) : Promise<youtube_v3.Schema$SearchListResponse | undefined>  {
+    YoutubeSearch(query: string, maxResults: number) : Promise<youtube_v3.Schema$SearchListResponse | undefined>  {
         return new Promise((resolve, reject) => {
             this.youtube.search.list({
                 part: ['snippet'],
                 q: query,
                 type: ['video'],
+                maxResults: maxResults
             }, (err, data) => {
                 if (err) {
                     reject(err);
@@ -55,12 +56,12 @@ export class Player extends EventEmitter {
     }
 
 
-    search(query: string) {
+    searchYoutube(query: string, maxResults: number) : Promise<youtube_v3.Schema$SearchListResponse | undefined> {
         return new Promise(async (resolve, reject) => {
-            const data: any = await this.YoutubeSearch(query);
+            const data: any = await this.YoutubeSearch(query, maxResults);
 
-            if (!data || !data.data || !data.data.items) return;
-            const video = data.data.items[0];
+            if (!data || !data.data || !data.data.items) return reject('No data');
+            const video = data.data.items;
 
             resolve(video);
         })
@@ -77,9 +78,9 @@ export class Player extends EventEmitter {
     }
 
     async searchYoutubeTrack(query: string) : Promise<Track | null> {
-        const data: any = await this.YoutubeSearch(query);
+        const data: any = await this.YoutubeSearch(query, 1);
 
-        if (!data || !data.data || !data.data.items) return null;
+        if (!data?.data?.items || data.data.items.length < 1) return null;
         const video = data.data.items[0];
 
         const stream = await this.getYTDLAudio(video.id.videoId);
@@ -103,10 +104,6 @@ export class Player extends EventEmitter {
         let stream: any[];
 
         stream = await twitch.getStream(username)
-            .then((data: any) => {
-                return data
-            })
-            .catch((err: any) => {});
 
         if (!stream || stream.length === 0) return null;
 
@@ -118,41 +115,35 @@ export class Player extends EventEmitter {
 
         const resource = this.createResource(m3u8stream(track.url));
 
-        return {resource: resource, title: username + ' stream', channelTitle: username, url: 'https://www.twitch.tv/' + username.toUpperCase(), type: TrackType.TWITCH};
+        return {resource: resource, title: username + ' stream', channelTitle: username, url: 'https://www.twitch.tv/' + username.toLowerCase(), type: TrackType.TWITCH};
     }
 
-    async searchSpotify(query: string, type: SpotifyType) : Promise<AllSpotify> {
-        switch (type) {
-            case SpotifyType.Track:
-                return await this.spotifyClient.searchTrack(query);
-            case SpotifyType.Album:
-                return await this.spotifyClient.searchAlbum(query);
-            case SpotifyType.Artist:
-                return await this.spotifyClient.searchArtist(query);
-            default:
-                return await this.spotifyClient.searchTrack(query);
-        }
-    }
+
     getQueue(guildId: string) {
-        let queue = this.queue.get(guildId);
-        if (!queue) {
-            queue = new Queue(this.client as Bot, guildId, this);
-            this.setQueue(guildId, queue);
+        return this.queue.get(guildId);
+    }
 
-            queue.on('playNext', (track: AudioResource) => {
-                this.emit('playNext', queue, track);
-            })
+    createQueue(guildId: string) {
+        const queue = new Queue(this.client as Bot, guildId, this);
+        this.setQueue(guildId, queue);
 
-            queue.on("stop", (queue: Queue) => {
-                this.emit("stop", queue);
-            })
+        queue.on('playNext', (track: AudioResource) => {
+            this.emit('playNext', queue, track);
+        })
 
-            queue.on('connect', (queue: Queue) => {
-                this.emit('connect', queue);
-            })
-        }
+        queue.on("stop", (queue: Queue) => {
+            this.emit("stop", queue);
+        })
 
-        return queue;
+        queue.on('voiceConnectionConnected', (queue: Queue) => {
+            this.emit('voiceConnectionConnected', queue);
+        })
+
+        queue.on('voiceConnectionDestroyed', (queue: Queue) => {
+            this.emit('voiceConnectionDestroyed', queue);
+        })
+
+        this.setQueue(guildId, queue);
     }
 
     setQueue(guildId: string, queue: Queue) {

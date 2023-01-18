@@ -6,6 +6,14 @@ module.exports = {
     once: false,
 
     execute: async (interaction: Interaction, client: Bot) => {
+
+        if (interaction.isAutocomplete()) {
+
+            let entry = interaction.options.getFocused();
+
+            await client.commands.get(interaction.commandName)?.handleAutoComplete(interaction, client, entry);
+        }
+
         if (!interaction.isCommand()) return;
 
         const command = client.commands.get(interaction.commandName);

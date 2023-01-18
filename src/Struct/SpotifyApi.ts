@@ -1,4 +1,4 @@
-import { Client as SpotifyClient, Artist, Track, Album, Playlist } from "spotify-api.js";
+import {Client as SpotifyClient, ClientSearchOptions} from "spotify-api.js";
 import {Player} from "./Player";
 
 export class SpotifyApi {
@@ -10,26 +10,27 @@ export class SpotifyApi {
     }
 
     async searchTrack(query: string) {
-        const track : Track[] = await this.client.tracks.search(query);
-        return track;
+        return await this.client.tracks.get(query);
     }
 
     async searchArtist(query: string) {
-        const artist : Artist[] = await this.client.artists.search(query);
-        return artist;
+        return await this.client.artists.get(query);
     }
 
     async searchAlbum(query: string) {
-        const album : Album[] = await this.client.albums.search(query);
-        return album;
+        return await this.client.albums.get(query);
+    }
+
+    async searchPlaylist(query: string) {
+        return await this.client.playlists.get(query);
+    }
+
+    async search(query: string, limit: number = 1) {
+        const options : ClientSearchOptions = {
+            limit,
+            offset: 0,
+            types: ['album' , 'artist' , 'track' , 'episode']
+        }
+        return await this.client.search(query, options);
     }
 }
-
-export enum SpotifyType {
-    Album = "album",
-    Artist = "artist",
-    Playlist = "playlist",
-    Track = "track"
-}
-
-export type AllSpotify = Artist[] | Track[] | Album[] | Playlist[];

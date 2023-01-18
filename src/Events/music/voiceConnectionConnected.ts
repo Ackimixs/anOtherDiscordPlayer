@@ -1,7 +1,7 @@
 import {Queue} from "../../Struct/Queue";
 
 module.exports = {
-    name: 'connect',
+    name: 'voiceConnectionConnected',
     once: false,
 
     execute: async (queue: Queue) => {

@@ -1,4 +1,4 @@
-import {Events, VoiceChannel} from "discord.js";
+import {Events} from "discord.js";
 import {Bot} from "../../Struct/Bot";
 
 module.exports = {
@@ -7,5 +7,12 @@ module.exports = {
 
     execute: async (client: Bot) => {
         console.log(`Logged in as ${client.user?.tag}!`);
+
+
+        client.guilds.fetch().then(guilds => {
+            guilds.forEach(guild => {
+                client.player.createQueue(guild.id);
+            })
+        })
     }
 }

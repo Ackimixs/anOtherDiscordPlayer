@@ -1,4 +1,4 @@
-import {ChatInputCommandInteraction} from "discord.js";
+import { ChatInputCommandInteraction} from "discord.js";
 import {Bot} from "../Struct/Bot";
 
 module.exports = {
@@ -7,6 +7,8 @@ module.exports = {
     category: "Information",
 
     async execute(interaction: ChatInputCommandInteraction, client: Bot) {
-        return interaction.reply({content: 'pong'});
+        await interaction.reply({content: `Pong!`, ephemeral: false});
+        const msg = await interaction.fetchReply();
+        await interaction.editReply({content: `Bot websocket ping : ${client.ws.ping}ms \nReal ping : ${msg.createdTimestamp - interaction.createdTimestamp}ms`});
     }
 }

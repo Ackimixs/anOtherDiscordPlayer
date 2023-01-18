@@ -1,12 +1,12 @@
 import {ChatInputCommandInteraction, EmbedBuilder, GuildMember} from "discord.js";
-import {Bot} from "../../Struct/Bot";
-import {Queue} from "../../Struct/Queue";
-import {Track} from "../../Interface/Track";
+import {Bot} from "../../../Struct/Bot";
+import {Queue} from "../../../Struct/Queue";
+import {Track} from "../../../Interface/Track";
 
 module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, queue: Queue) => {
     const query = interaction.options.getString('name', true);
 
-    await interaction.reply({content: `Searching for **${query}**`, ephemeral: true});
+    await interaction.reply({content: `Searching for ...`, ephemeral: true});
 
     const member = interaction.member as GuildMember;
 
@@ -25,8 +25,6 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
         content: 'No results found!',
         ephemeral: true
     })
-
-
 
     const embed = new EmbedBuilder()
         .setTitle('Youtube')

@@ -1,10 +1,12 @@
 import {Queue} from "../../Struct/Queue";
 
 module.exports = {
-    name: 'stop',
+    name: 'voiceConnectionDestroyed',
     once: false,
 
     execute: async (queue: Queue) => {
-        queue.musicChannel?.send(`Stopped the music`);
+
+        console.log("Disconnected from voice channel : " + queue.musicChannel?.id);
+
     }
 }
