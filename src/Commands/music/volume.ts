@@ -16,7 +16,7 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
         ephemeral: true
     })
 
-    queue.setVolume(volume/100);
+    queue.setVolume(volume);
 
     await interaction.reply({content: `Volume set to ${volume}`});
 }

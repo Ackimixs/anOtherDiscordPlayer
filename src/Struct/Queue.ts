@@ -22,6 +22,7 @@ export class Queue extends EventEmitter {
     player: Player
     playing: boolean = false;
     musicChannel: VoiceChannel | null = null;
+    volume: number = 0.5;
     constructor(client: Bot, guildId: string, player: Player) {
         super();
 
@@ -81,7 +82,9 @@ export class Queue extends EventEmitter {
     }
 
     setVolume(volume: number) {
-        this.actualTrack?.resource?.volume?.setVolume(volume);
+        volume = Math.min(Math.max(volume, 0), 100);
+        this.volume = volume/100;
+        this.actualTrack?.resource?.volume?.setVolume(volume/100);
     }
 
     stop() {
@@ -97,6 +100,7 @@ export class Queue extends EventEmitter {
      play() {
         if (this.queue.length > 0) {
             this.actualTrack = this.queue[0];
+            this.actualTrack?.resource?.volume?.setVolume(this.volume);
             this.AudioPlayer.play(this.actualTrack.resource as AudioResource);
             this.playing = true;
             this.emit('playNext', this.actualTrack);

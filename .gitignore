@@ -3,5 +3,5 @@ node_modules/
 song/
 dist/
 .env
-.package-lock.json
+package-lock.json
 test.js

@@ -1,7 +1,7 @@
 {
   "name": "bot",
   "version": "1.0.0",
-  "description": "",
+  "description": "Working with twitch | YouTube | spotify",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
@@ -32,5 +32,13 @@
     "spotify-uri": "^3.0.3",
     "twitch-m3u8": "^1.1.5",
     "ytdl-core": "^4.11.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ackimixs/discordWIthMyPlayer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ackimixs/discordWIthMyPlayer/issues"
+  },
+  "homepage": "https://github.com/Ackimixs/discordWIthMyPlayer#readme"
 }

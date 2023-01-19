@@ -1,5 +1,6 @@
 import {Bot} from "../Struct/Bot";
 import {ApplicationCommandOptionType, ChatInputCommandInteraction, Interaction} from "discord.js";
+import {addDataToJSON, readDataFromJSON} from "../utils/function";
 
 module.exports = {
     name: "music",
@@ -114,19 +115,6 @@ module.exports = {
                             required: false
                         }
                     ]
-                },
-                {
-                    type: ApplicationCommandOptionType.Subcommand,
-                    name: "youtube",
-                    description: "search music from youtube",
-                    options: [
-                        {
-                            type: ApplicationCommandOptionType.String,
-                            name: "query",
-                            description: "query",
-                            required: true,
-                        }
-                    ]
                 }
             ]
         },
@@ -179,7 +167,15 @@ module.exports = {
         {
             type: ApplicationCommandOptionType.Subcommand,
             name: "queue",
-            description: "Show the queue"
+            description: "Show the queue",
+            options: [
+                {
+                    type: ApplicationCommandOptionType.Integer,
+                    name: "page",
+                    description: "Page",
+                    required: false
+                }
+            ]
         }
     ],
 
@@ -198,35 +194,66 @@ module.exports = {
             const subcommandGroup = interaction.options.getSubcommandGroup();
 
             if (subcommandGroup === 'play') {
+
+                try {
+                    new URL(query);
+                    return await interaction.respond([]);
+                } catch {}
+
+
                 if (subcommand === 'youtube') {
-                    if (query.length < 3) return;
+                    //TODO just change the file system with a mongodb database
+                    if (query.length < 3) return await interaction.respond([]);
 
-                    const tracks: any = await client.player.searchYoutube(query, 5);
+                    let fichier = await readDataFromJSON('youtube.json');
 
-                    interaction.respond(tracks.map((track: any) => ({
-                        name: track.snippet.channelTitle + ' - ' + ((track.snippet.title.length + track.snippet.channelTitle) > 90 ? track.snippet.title.slice(0, 90-track.snippet.channelTitle) + '...' : track.snippet.title),
-                        value: track.id.videoId
+                    if (!fichier) fichier = [];
+
+                    fichier = fichier?.filter((user: any) => user?.value?.toLowerCase().includes(query.toLowerCase()))
+
+                    const tracks: any = await client.player.searchYoutube(query, 5-fichier?.length);
+
+                    if (!tracks && fichier?.length < 1) return await interaction.respond([]);
+
+                    const data : any[] = [];
+
+                    tracks.map((track: any) => {
+                        data.push({
+                            name: track.snippet.channelTitle + ' - ' + ((track.snippet.title.length + track.snippet.channelTitle.length) > 90 ? track.snippet.title.slice(0, 90-track.snippet.channelTitle.length) + '...' : track.snippet.title),
+                            value: track.id.videoId
+                        })
+                    })
+
+                    await addDataToJSON(data, 'youtube.json');
+
+                    if (fichier?.length > 0) {
+                        data.push(...fichier);
+                    }
+
+                    interaction.respond(data.map((track: any) => ({
+                        name: track.name,
+                        value: track.value
                     })));
                 } else if (subcommand === 'twitch') {
-                    if (query.length < 3) return;
+                    if (query.length < 3) return await interaction.respond([]);
 
-                    const fetch = await client.twitchApi.fetchQuery(encodeURIComponent(query));
+                    const fetch = await client.twitchApi.fetchQuery(encodeURIComponent(query), (5));
 
-                    if (fetch?.data.length < 1) return;
+                    if (fetch?.data?.length < 1) return interaction.respond([]);
 
-                    interaction.respond(fetch.data.map((user: any) => ({
+                    interaction.respond(fetch?.data?.map((user: any) => ({
                         name: (`${user.broadcaster_language} - ${user.display_name} - ${user.title}`).length > 90 ? (`${user.broadcaster_language} - ${user.display_name} - ${user.title}`).slice(0, 90) + '...' : (`${user.broadcaster_language} - ${user.display_name} - ${user.title}`),
                         value: user.broadcaster_login
                     })));
                 } else if (subcommand === 'spotify') {
-                    if (query.length < 3) return;
+                    if (query.length < 3) return await interaction.respond([]);
 
                     const tracks = (await client.player.spotifyClient.search(query, 10)).tracks;
 
                     if (!tracks || tracks.length < 1) return;
 
                     interaction.respond(tracks.map((track: any) => ({
-                        name: track.artists[0].name + ' - ' + track.name + (track.album ? ' - album : ' + track.album.name : ''),
+                        name: (track.artists[0].name + ' - ' + track.name + (track.album ? ' - album : ' + track.album.name : '')).length > 90 ? (track.artists[0].name + ' - ' + track.name + (track.album ? ' - album : ' + track.album.name : '')).slice(0, 90) + '...' : (track.artists[0].name + ' - ' + track.name + (track.album ? ' - album : ' + track.album.name : '')),
                         value: track.uri || track.externalURL.spotify
                     })))
                 }

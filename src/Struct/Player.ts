@@ -29,7 +29,7 @@ export class Player extends EventEmitter {
 
     }
 
-    YoutubeSearch(query: string, maxResults: number) : Promise<youtube_v3.Schema$SearchListResponse | undefined>  {
+    YoutubeSearch(query: string, maxResults: number = 3) : Promise<youtube_v3.Schema$SearchListResponse | undefined>  {
         return new Promise((resolve, reject) => {
             this.youtube.search.list({
                 part: ['snippet'],
