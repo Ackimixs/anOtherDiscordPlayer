@@ -1,4 +1,3 @@
-import {AudioResource} from "@discordjs/voice";
 
 export interface Track {
     title: string;
@@ -7,10 +6,11 @@ export interface Track {
     url: string;
     duration?: number;
     thumbnail?: string;
-    resource: AudioResource;
     type: TrackType;
     discordMessageUrl?: string;
     avatarUrl?: string;
+    youtubeUrl?: string;
+    twitchUrl?: string;
 }
 
 export enum TrackType {

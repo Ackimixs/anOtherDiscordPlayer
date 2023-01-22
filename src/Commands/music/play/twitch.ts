@@ -34,7 +34,7 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
 
     let track : Track | null = await client.player.searchTwitchStreamTrack(username);
 
-    if (!track?.resource) return interaction.followUp({content: 'No stream found! Streamer maybe offline', ephemeral: true});
+    if (!track) return interaction.followUp({content: 'No stream found! Streamer maybe offline', ephemeral: true});
 
     track.title = stream.title;
     track.thumbnail = stream.thumbnail_url.replace('{width}', '1920').replace('{height}', '1080') as string;
@@ -43,7 +43,7 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
     const embed = new EmbedBuilder()
         .setTitle('Twitch Stream')
         .setImage(track.thumbnail)
-        .setDescription(`Add to queue \`${track.title}\` by [${track.channelTitle}](${track.url} "The best streamer ever")`)
+        .setDescription(`Add to queue \`${track.title}\` by [${track.channelTitle}](${track.channelTitle === 'etoiles' ? track.url + '"The best streamer ever"' : track.url + '"an other good streamer"'})`)
 
     const result = await interaction.followUp({embeds: [embed]});
 

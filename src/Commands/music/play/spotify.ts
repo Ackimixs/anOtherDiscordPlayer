@@ -29,7 +29,6 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
                 const ytTrack = await client.player.searchYoutubeTrack(`${track.name} ${track.artists[0].name}`);
                 if (!ytTrack) return interaction.followUp({content: 'No results found!', ephemeral: true});
                 ytTrack.type = TrackType.SPOTIFY;
-                ytTrack.resource.volume?.setVolume(0.25);
                 queue.addTrack(ytTrack);
                 await interaction.followUp({content: `Add ${ytTrack.title} to Queue`, ephemeral: false});
 
@@ -39,11 +38,9 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
                 const listTrack : any[] = [];
                 for (const track of album.tracks) {
                     if (track?.name) {
-                        console.log(track.name);
                         const ytTrack = await client.player.searchYoutubeTrack(`${track.name} ${track.artists[0].name}`);
                         if (ytTrack) {
                             ytTrack.type = TrackType.SPOTIFY;
-                            ytTrack.resource.volume?.setVolume(0.25);
                             listTrack.push(ytTrack);
                         }
                     }
@@ -66,7 +63,6 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
                 })
                 search.type = TrackType.SPOTIFY;
                 queue.addTrack(search);
-                search.resource.volume?.setVolume(0.25);
                 await interaction.followUp({content: `Add ${search.title} to Queue`, ephemeral: false});
 
             } else if (data instanceof Playlist) {
@@ -79,14 +75,12 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
                         const ytTrack = await client.player.searchYoutubeTrack(`${track.track?.name} ${track.track?.artists[0].name}`);
                         if (ytTrack) {
                             ytTrack.type = TrackType.SPOTIFY;
-                            ytTrack.resource.volume?.setVolume(0.25);
                             listTrack.push(ytTrack);
                         }
                     } else if (track.track) {
                         const ytTrack = await client.player.searchYoutubeTrack(`${track.track?.name} ${track.track?.show?.name}`);
                         if (ytTrack) {
                             ytTrack.type = TrackType.SPOTIFY;
-                            ytTrack.resource.volume?.setVolume(0.25);
                             listTrack.push(ytTrack);
                         }
                     }
@@ -111,7 +105,6 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
             const ytTrack = await client.player.searchYoutubeTrack(`${track.name} ${track.artists[0].name}`);
             if (!ytTrack) return interaction.followUp({content: 'No results found!', ephemeral: true});
             ytTrack.type = TrackType.SPOTIFY;
-            ytTrack.resource.volume?.setVolume(0.25);
             queue.addTrack(ytTrack);
 
             await interaction.followUp({content: `Added ${ytTrack.title} to the queue!`, ephemeral: false});

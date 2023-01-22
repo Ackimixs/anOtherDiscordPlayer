@@ -11,11 +11,14 @@ import {VoiceBasedChannel, VoiceChannel} from "discord.js";
 import {Player} from "./Player";
 import {Track} from "../Interface/Track";
 import {shuffleArray} from "../utils/function";
+import m3u8stream from "m3u8stream";
+import ytdl from "ytdl-core";
 export class Queue extends EventEmitter {
     guildId: string
     client: Bot
     AudioPlayer: AudioPlayer
     connection: VoiceConnection | undefined
+    actualResource: AudioResource | null = null;
     actualTrack: Track | null = null;
     private queue: Track[] = [];
     history: Track[] = [];
@@ -23,6 +26,7 @@ export class Queue extends EventEmitter {
     playing: boolean = false;
     musicChannel: VoiceChannel | null = null;
     volume: number = 0.5;
+    loop: loopMode = loopMode.OFF;
     constructor(client: Bot, guildId: string, player: Player) {
         super();
 
@@ -38,8 +42,9 @@ export class Queue extends EventEmitter {
 
         this.AudioPlayer.on('stateChange', (oldState, newState) => {
             if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
-                const previousTrack: Track = this.queue.shift() as Track;
-                this.history.unshift(previousTrack);
+                if (this.loop === loopMode.OFF) {
+                    this.history.unshift(this.queue.shift() as Track);
+                }
                 setTimeout(() => {
                     this.play();
                 }, 1000);
@@ -84,12 +89,12 @@ export class Queue extends EventEmitter {
     setVolume(volume: number) {
         volume = Math.min(Math.max(volume, 0), 100);
         this.volume = volume/100;
-        this.actualTrack?.resource?.volume?.setVolume(volume/100);
+        this.actualResource?.volume?.setVolume(volume/100);
     }
 
     stop() {
         this.playing = false;
-        this.actualTrack = null;
+        this.actualResource = null;
         this.queue = [];
         this.history = [];
         this.AudioPlayer.stop();
@@ -99,9 +104,32 @@ export class Queue extends EventEmitter {
 
      play() {
         if (this.queue.length > 0) {
-            this.actualTrack = this.queue[0];
-            this.actualTrack?.resource?.volume?.setVolume(this.volume);
-            this.AudioPlayer.play(this.actualTrack.resource as AudioResource);
+
+            switch (this.loop) {
+                case loopMode.RANDOM:
+                    this.actualTrack = this.queue[Math.floor(Math.random() * this.queue.length)];
+                    break;
+                case loopMode.OFF:
+                    this.actualTrack = this.queue[0];
+                    break;
+                case loopMode.QUEUE:
+                    this.actualTrack = this.queue[0];
+                    this.queue.push(this.queue.shift() as Track);
+                    break;
+                case loopMode.TRACK:
+                    break;
+            }
+
+            if (this.actualTrack?.type === 'twitch') {
+                this.actualResource = this.player.createResource(m3u8stream(this.actualTrack.twitchUrl as string))
+            } else {
+                this.actualResource = this.player.createResource(ytdl(this.actualTrack?.youtubeUrl as string , {filter: 'audioonly', quality: 'highestaudio'}))
+            }
+
+            if (!this.actualTrack) return;
+            this.actualResource?.volume?.setVolume(this.volume);
+
+            this.AudioPlayer.play(this.actualResource as AudioResource);
             this.playing = true;
             this.emit('playNext', this.actualTrack);
         } else {
@@ -118,9 +146,10 @@ export class Queue extends EventEmitter {
     }
 
     skip() {
-        const previousTrack: Track = this.queue.shift() as Track;
-        this.history.unshift(previousTrack);
         setTimeout(() => {
+            if (this.loop === loopMode.OFF) {
+                this.history.unshift(this.queue.shift() as Track);
+            }
             this.play();
         }, 1000);
     }
@@ -132,4 +161,19 @@ export class Queue extends EventEmitter {
     shuffle() {
         this.queue = shuffleArray(this.queue);
     }
+
+    setLoopMode(mode: loopMode) {
+        this.loop = mode;
+    }
+
+    getLoopMode(): loopMode {
+        return this.loop;
+    }
+}
+
+export enum loopMode {
+    OFF = 0,
+    RANDOM = 1,
+    QUEUE = 2,
+    TRACK = 3
 }

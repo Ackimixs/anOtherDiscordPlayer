@@ -18,9 +18,10 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
     for (let i = (page-1)*10; i < (page*10 > queueList.length ? queueList.length : page*10); i++) {
         if (queueList[i]) {
             message += `${i + 1}. **${queueList[i].type}** -  ${queueList[i].title} - **${queueList[i].channelTitle}**\n`
-
         }
     }
+
+    if (queueList.length > 10) message += `Page ${page}/${Math.ceil(queueList.length/10)}`
 
     await interaction.reply({content: message.length < 1 ? 'queue is Empty' : message, ephemeral: message.length < 1});
 }

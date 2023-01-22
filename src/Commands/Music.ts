@@ -1,6 +1,7 @@
 import {Bot} from "../Struct/Bot";
 import {ApplicationCommandOptionType, ChatInputCommandInteraction, Interaction} from "discord.js";
-import {addDataToJSON, readDataFromJSON} from "../utils/function";
+import YouTube from "youtube-sr";
+import {loopMode} from "../Struct/Queue";
 
 module.exports = {
     name: "music",
@@ -176,6 +177,37 @@ module.exports = {
                     required: false
                 }
             ]
+        },
+        {
+            type: ApplicationCommandOptionType.Subcommand,
+            name: "loop",
+            description: "Loop the song",
+            options: [
+                {
+                    type: ApplicationCommandOptionType.Integer,
+                    name: "mode",
+                    description: "Mode",
+                    required: true,
+                    choices: [
+                        {
+                            name: "off",
+                            value: loopMode.OFF
+                        },
+                        {
+                            name: "track",
+                            value: loopMode.TRACK
+                        },
+                        {
+                            name: "queue",
+                            value: loopMode.QUEUE
+                        },
+                        {
+                            name: "random",
+                            value: loopMode.RANDOM
+                        }
+                    ]
+                }
+            ]
         }
     ],
 
@@ -202,38 +234,18 @@ module.exports = {
 
 
                 if (subcommand === 'youtube') {
-                    //TODO just change the file system with a mongodb database
+
                     if (query.length < 3) return await interaction.respond([]);
 
-                    let fichier = await readDataFromJSON('youtube.json');
+                    const fetch = await YouTube.search(query, { type: "video", limit : 7});
 
-                    if (!fichier) fichier = [];
+                    if (!fetch?.length) return await interaction.respond([]);
 
-                    fichier = fichier?.filter((user: any) => user?.value?.toLowerCase().includes(query.toLowerCase()))
-
-                    const tracks: any = await client.player.searchYoutube(query, 5-fichier?.length);
-
-                    if (!tracks && fichier?.length < 1) return await interaction.respond([]);
-
-                    const data : any[] = [];
-
-                    tracks.map((track: any) => {
-                        data.push({
-                            name: track.snippet.channelTitle + ' - ' + ((track.snippet.title.length + track.snippet.channelTitle.length) > 90 ? track.snippet.title.slice(0, 90-track.snippet.channelTitle.length) + '...' : track.snippet.title),
-                            value: track.id.videoId
-                        })
-                    })
-
-                    await addDataToJSON(data, 'youtube.json');
-
-                    if (fichier?.length > 0) {
-                        data.push(...fichier);
-                    }
-
-                    interaction.respond(data.map((track: any) => ({
-                        name: track.name,
-                        value: track.value
+                    interaction.respond(fetch.map((track: any) => ({
+                        name: track.channel.name + ' - ' + (track.title.length + track.channel.name.length > 90 ? track.title.slice(0, 90 - track.channel.name.length) + '...' : track.title),
+                        value: track.id
                     })));
+
                 } else if (subcommand === 'twitch') {
                     if (query.length < 3) return await interaction.respond([]);
 

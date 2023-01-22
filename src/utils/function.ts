@@ -58,10 +58,18 @@ async function deleteFile(fileName: string): Promise<void> {
         }
     }
 }
+
+function decodeString(html: string) : string {
+    return html.replace(/&#([0-9]{1,3});/gi, function(match, num) {
+        return String.fromCharCode(parseInt(num));
+    });
+}
+
 export {
     shuffleArray,
     isUrl,
     readDataFromJSON,
     addDataToJSON,
-    deleteFile
+    deleteFile,
+    decodeString
 }

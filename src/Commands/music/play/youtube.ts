@@ -15,6 +15,8 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
         ephemeral: true
     });
 
+    await client.player.searchYoutubeTrackById(query);
+
     const voiceChannel = member.voice.channel;
 
     queue.connect(voiceChannel);
