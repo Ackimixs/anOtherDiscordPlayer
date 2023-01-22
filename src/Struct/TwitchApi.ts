@@ -1,5 +1,4 @@
 import {Bot} from "./Bot";
-import * as process from "process";
 
 export class TwitchApi {
     discordClient: Bot;
@@ -8,8 +7,8 @@ export class TwitchApi {
     Client_secret: string;
     constructor(client: Bot) {
         this.discordClient = client;
-        this.Client_id = process.env.TWITCH_CLIENT_ID as string;
-        this.Client_secret = process.env.TWITCH_CLIENT_SECRET as string;
+        this.Client_id = client.config.key.twitchClient;
+        this.Client_secret = client.config.key.twitchSecret;
     }
 
     async fetchToken() {

@@ -8,17 +8,19 @@ module.exports = {
     execute: async (message: Message, client: Bot) => {
         if (message.author.bot) return;
 
-        if (message.channel.id === '1062822644438810704') {
+        if (message.channel.id === client.config.openai.channelToAutoReply) {
             const content = message.content;
 
-            const respone = await client.openai.createCompletion({
-                model: "text-davinci-003",
-                prompt: content,
-                max_tokens: 100,
-                temperature: 0.9
-            });
+            if (client.openai) {
+                const respone = await client.openai.createCompletion({
+                    model: "text-davinci-003",
+                    prompt: content,
+                    max_tokens: 100,
+                    temperature: 0.9
+                });
 
-            await message.channel.send(respone.data.choices[0].text as string);
+                await message.channel.send(respone.data.choices[0].text as string);
+            }
         }
     }
 }

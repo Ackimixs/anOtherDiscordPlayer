@@ -17,13 +17,16 @@ module.exports = {
     execute: async (interaction: ChatInputCommandInteraction, client: Bot) => {
         const content = interaction.options.getString("text");
 
-        const respone = await client.openai.createCompletion({
-            model: "text-davinci-003",
-            prompt: content,
-            max_tokens: 100,
-            temperature: 0.9
-        });
+        if (client.openai) {
+            const respone = await client.openai.createCompletion({
+                model: "text-davinci-003",
+                prompt: content,
+                max_tokens: 100,
+                temperature: 0.9
+            });
 
-        await interaction.reply({content: respone.data.choices[0].text || 'No response'});
+            await interaction.reply({content: respone.data.choices[0].text || 'No response'});
+        }
+        await interaction.reply({content: 'OpenAI is not configured'});
     }
 }

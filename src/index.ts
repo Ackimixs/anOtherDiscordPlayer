@@ -23,5 +23,5 @@ require('dotenv').config();
         require(`./Handlers/${file}`)(client)
     })
 
-    await client.login(process.env.BOT_TOKEN);
+    await client.login(client.config.key.bot);
 })()

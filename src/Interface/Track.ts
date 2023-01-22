@@ -9,7 +9,6 @@ export interface Track {
     type: TrackType;
     discordMessageUrl?: string;
     avatarUrl?: string;
-    youtubeUrl?: string;
     twitchUrl?: string;
 }
 

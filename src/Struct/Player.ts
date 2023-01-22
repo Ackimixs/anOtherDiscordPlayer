@@ -14,9 +14,8 @@ export class Player extends EventEmitter {
     spotifyClient: SpotifyApi;
     constructor(client: Bot) {
         super();
-
         this.client = client;
-        this.spotifyClient = new SpotifyApi(this);
+        this.spotifyClient = new SpotifyApi(this, client);
         this.queue = new Collection<string, Queue>()
     }
 
@@ -28,20 +27,19 @@ export class Player extends EventEmitter {
     }
 
     async searchYoutubeTrackById(id: string) : Promise<Track | null>{
-        const track = await YouTube.getVideo('https://www.youtube.com/watch?v=' + id);
+        const track = await YouTube.search(id, {type: 'video', limit: 1});
 
         if (!track) return null;
 
         return {
-            title: track.title || 'No title',
-            channelTitle: track.channel!.name!,
-            url: track.url,
-            youtubeUrl: track.url,
+            title: track[0].title || 'No title',
+            channelTitle: track[0].channel!.name!,
+            url: track[0].url,
             type: TrackType.YOUTUBE,
-            thumbnail: track.thumbnail?.url,
-            avatarUrl: track.channel!.icon.url,
-            duration: track.duration,
-            description: track.description
+            thumbnail: track[0].thumbnail?.url,
+            avatarUrl: track[0].channel!.icon.url,
+            duration: track[0].duration,
+            description: track[0].description
         }
     }
 
@@ -54,7 +52,6 @@ export class Player extends EventEmitter {
             title: search[0].title || 'No title',
             channelTitle: search[0].channel!.name!,
             url: search[0].url,
-            youtubeUrl: search[0].url,
             type: TrackType.YOUTUBE,
             thumbnail: search[0].thumbnail?.url,
             avatarUrl: search[0].channel!.icon.url,

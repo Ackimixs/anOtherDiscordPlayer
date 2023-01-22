@@ -25,7 +25,7 @@ export class Queue extends EventEmitter {
     player: Player
     playing: boolean = false;
     musicChannel: VoiceChannel | null = null;
-    volume: number = 0.5;
+    volume: number = 0.25;
     loop: loopMode = loopMode.OFF;
     constructor(client: Bot, guildId: string, player: Player) {
         super();
@@ -43,6 +43,9 @@ export class Queue extends EventEmitter {
         this.AudioPlayer.on('stateChange', (oldState, newState) => {
             if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
                 if (this.loop === loopMode.OFF) {
+                    if (this.history.length > 5) {
+                        this.history.pop();
+                    }
                     this.history.unshift(this.queue.shift() as Track);
                 }
                 setTimeout(() => {
@@ -123,7 +126,7 @@ export class Queue extends EventEmitter {
             if (this.actualTrack?.type === 'twitch') {
                 this.actualResource = this.player.createResource(m3u8stream(this.actualTrack.twitchUrl as string))
             } else {
-                this.actualResource = this.player.createResource(ytdl(this.actualTrack?.youtubeUrl as string , {filter: 'audioonly', quality: 'highestaudio'}))
+                this.actualResource = this.player.createResource(ytdl(this.actualTrack?.url as string , this.client.config.player.ytdl_options))
             }
 
             if (!this.actualTrack) return;
@@ -148,10 +151,17 @@ export class Queue extends EventEmitter {
     skip() {
         setTimeout(() => {
             if (this.loop === loopMode.OFF) {
+                if (this.history.length > 5) {
+                    this.history.pop();
+                }
                 this.history.unshift(this.queue.shift() as Track);
             }
             this.play();
         }, 1000);
+    }
+
+    getHistory(): Track[] {
+        return this.history;
     }
 
     clear() {

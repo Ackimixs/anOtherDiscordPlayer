@@ -43,7 +43,7 @@ module.exports = async (interaction: ChatInputCommandInteraction, client: Bot, q
     const embed = new EmbedBuilder()
         .setTitle('Twitch Stream')
         .setImage(track.thumbnail)
-        .setDescription(`Add to queue \`${track.title}\` by [${track.channelTitle}](${track.channelTitle === 'etoiles' ? track.url + '"The best streamer ever"' : track.url + '"an other good streamer"'})`)
+        .setDescription(`Add to queue \`${track.title}\` by [${track.channelTitle}](${track.channelTitle === 'etoiles' ? track.url + ' "The best streamer ever"' : track.url + ' "an other good streamer"'})`)
 
     const result = await interaction.followUp({embeds: [embed]});
 

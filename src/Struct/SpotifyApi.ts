@@ -1,12 +1,15 @@
 import {Client as SpotifyClient, ClientSearchOptions} from "spotify-api.js";
 import {Player} from "./Player";
+import {Bot} from "./Bot";
 
 export class SpotifyApi {
     player: Player;
     client: SpotifyClient;
-    constructor(player: Player) {
+    bot: Bot;
+    constructor(player: Player, client: Bot) {
         this.player = player;
-        this.client = new SpotifyClient({ token: { clientID: process.env.SPOTIFY_CLIENT_ID as string, clientSecret: process.env.SPOTIFY_CLIENT_SECRET as string } });
+        this.bot = client;
+        this.client = new SpotifyClient({ token: { clientID: this.bot.config.key.spotifyClient, clientSecret: this.bot.config.key.spotifySecret } });
     }
 
     async searchTrack(query: string) {
