@@ -9,7 +9,7 @@
  - update many things
 
 ## [0.2.0](https://github.com/Ackimixs/anOtherDiscordPlayer/commit/41a6b363c4959289a033d1a5f714f2e178a632ce) 
-- use of new youtube api, instead of the official i use [youtube-sr](https://www.npmjs.com/package/youtube-sr)  
+- new youtube api to get data, instead of the official i use [youtube-sr](https://www.npmjs.com/package/youtube-sr)  
  => to get more easy access to the data
 - add new different command for music
 - update many other things

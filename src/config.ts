@@ -14,8 +14,13 @@ const config = {
     player: {
         ytdl_options: {
             quality: 'highestaudio',
-            highWaterMark: 1 << 25,
             filter: 'audioonly',
+
+            // Do not modify
+            highWaterMark: 1 << 62,
+            liveBuffer: 1 << 62,
+            dlChunkSize: 0,
+            bitrate: 128,
         }
     }
 }
