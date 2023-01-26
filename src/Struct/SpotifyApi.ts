@@ -1,13 +1,11 @@
 import {Client as SpotifyClient, ClientSearchOptions} from "spotify-api.js";
-import {Player} from "./Player";
 import {Bot} from "./Bot";
 
 export class SpotifyApi {
-    player: Player;
     client: SpotifyClient;
     bot: Bot;
-    constructor(player: Player, client: Bot) {
-        this.player = player;
+    access_token: string = '';
+    constructor(client: Bot) {
         this.bot = client;
         this.client = new SpotifyClient({ token: { clientID: this.bot.config.key.spotifyClient, clientSecret: this.bot.config.key.spotifySecret } });
     }
