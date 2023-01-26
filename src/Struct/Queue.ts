@@ -60,22 +60,36 @@ export class Queue extends EventEmitter {
     }
 
     connect(channel: VoiceBasedChannel) {
-        this.musicChannel = channel as VoiceChannel;
-        this.connection = joinVoiceChannel({
-            channelId: channel.id,
-            guildId: channel.guild.id,
-            adapterCreator: channel.guild.voiceAdapterCreator,
-        });
 
-        this.connection.on(VoiceConnectionStatus.Connecting, () => {
-            this.emit('voiceConnectionConnected', this);
-        });
+        if (this.connection?.state?.status === 'ready') return;
 
-        this.connection.on(VoiceConnectionStatus.Destroyed, () => {
-            this.emit('voiceConnectionDestroyed', this);
-        })
+        if (this.connection?.state?.status === 'disconnected') {
+            console.log('disconnected try to join');
+            this.connection = joinVoiceChannel({
+                channelId: channel.id,
+                guildId: channel.guild.id,
+                adapterCreator: channel.guild.voiceAdapterCreator,
+            });
+            this.connection.subscribe(this.AudioPlayer);
+        } else {
 
-        this.connection.subscribe(this.AudioPlayer);
+            this.musicChannel = channel as VoiceChannel;
+            this.connection = joinVoiceChannel({
+                channelId: channel.id,
+                guildId: channel.guild.id,
+                adapterCreator: channel.guild.voiceAdapterCreator,
+            });
+
+            this.connection.on(VoiceConnectionStatus.Connecting, () => {
+                this.emit('voiceConnectionConnected', this);
+            });
+
+            this.connection.on(VoiceConnectionStatus.Destroyed, () => {
+                this.emit('voiceConnectionDestroyed', this);
+            })
+
+            this.connection.subscribe(this.AudioPlayer);
+        }
     }
     addTrack(track: Track): void {
         this.queue.push(track);
@@ -101,7 +115,7 @@ export class Queue extends EventEmitter {
         this.queue = [];
         this.history = [];
         this.AudioPlayer.stop();
-        this.connection?.destroy();
+        this.connection?.disconnect();
         this.emit('stop', this);
     }
 
