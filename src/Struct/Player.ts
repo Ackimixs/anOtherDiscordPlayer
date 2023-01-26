@@ -15,7 +15,7 @@ export class Player extends EventEmitter {
     constructor(client: Bot) {
         super();
         this.client = client;
-        this.spotifyClient = new SpotifyApi(this, client);
+        this.spotifyClient = new SpotifyApi(client);
         this.queue = new Collection<string, Queue>()
     }
 
@@ -89,16 +89,16 @@ export class Player extends EventEmitter {
             this.emit('playNext', queue, track);
         })
 
-        queue.on("stop", (queue: Queue) => {
-            this.emit("stop", queue);
+        queue.on("stop", (q: Queue) => {
+            this.emit("stop", q);
         })
 
-        queue.on('voiceConnectionConnected', (queue: Queue) => {
-            this.emit('voiceConnectionConnected', queue);
+        queue.on('voiceConnectionConnected', (q: Queue) => {
+            this.emit('voiceConnectionConnected', q);
         })
 
-        queue.on('voiceConnectionDestroyed', (queue: Queue) => {
-            this.emit('voiceConnectionDestroyed', queue);
+        queue.on('voiceConnectionDestroyed', (q: Queue) => {
+            this.emit('voiceConnectionDestroyed', q);
         })
 
         this.setQueue(guildId, queue);
